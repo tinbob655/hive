@@ -7,7 +7,7 @@ import HexTile from "./HexTile.tsx";
 import PieceBank from "./PieceBank.tsx";
 import type {Bug, Cell, HexCoordinate} from "../../types/board";
 import type {Move} from "../../types/move";
-import './gameBoard.scss';
+import './board.scss';
 
 const PADDING = HEX_SIZE * 2;
 
