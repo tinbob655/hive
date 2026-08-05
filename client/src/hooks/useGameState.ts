@@ -2,20 +2,23 @@ import {useEffect, useState} from 'react';
 import useAxios from "./useAxios.ts";
 import {Client, type IFrame, type IMessage} from "@stomp/stompjs";
 import SockJS from 'sockjs-client';
+import type {Board} from "../types/board";
 
 interface Exports {
     connected: boolean;
-    gameState: unknown;
+    board: Board;
+}
+
+const blankBoard: Board = {
+    cells: [],
 }
 
 export default function useGameState(): Exports {
 
     const {axiosClient} = useAxios();
 
-    const [gameState, setGameState] = useState<unknown>(null);
+    const [board, setBoard] = useState<Board>(blankBoard);
     const [connected, setConnected] = useState<boolean>(false);
-
-    function handleIncoming(gameState: unknown[]): void {}
 
     //set up our websocket
     useEffect(() => {
@@ -30,7 +33,8 @@ export default function useGameState(): Exports {
 
                 setConnected(true);
                 client.subscribe("/topic/orders", (message: IMessage): void => {
-                    handleIncoming(JSON.parse(message.body) as unknown[]);
+                    const board: Board = JSON.parse(message.body) as Board;
+                    setBoard(board);
                 })
             },
 
@@ -49,9 +53,9 @@ export default function useGameState(): Exports {
         return () => {
             isMounted = false;
             void client.deactivate();
-            setGameState(null);
+            setBoard(blankBoard);
         }
     }, [axiosClient]);
 
-    return {connected, gameState};
+    return {connected, board};
 }
