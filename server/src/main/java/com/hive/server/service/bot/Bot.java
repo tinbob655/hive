@@ -5,7 +5,7 @@ import com.hive.server.model.state.GameState;
 import org.springframework.stereotype.Service;
 
 @Service
-public sealed interface Bot permits MinimaxBot {
+public interface Bot {
 
     Move decideMove(GameState state);
 }
