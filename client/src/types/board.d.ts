@@ -13,8 +13,8 @@ export interface HexCoordinate {
 }
 
 export interface Piece {
-   Colour: Colour;
-   Bug: Bug;
+   colour: Colour;
+   bug: Bug;
 }
 
 export type Colour = 'WHITE' | 'BLACK';

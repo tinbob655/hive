@@ -1,24 +1,29 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useRef} from 'react';
 import useAxios from "./useAxios.ts";
 import {Client, type IFrame, type IMessage} from "@stomp/stompjs";
 import SockJS from 'sockjs-client';
 import type {Board} from "../types/board";
+import type {Move} from "../types/move";
 
 interface Exports {
     connected: boolean;
     board: Board;
+
+    sendMove(move: Move): void;
 }
 
 const blankBoard: Board = {
     cells: [],
 }
 
-export default function useGameState(): Exports {
+export default function useBoard(): Exports {
 
     const {axiosClient} = useAxios();
 
     const [board, setBoard] = useState<Board>(blankBoard);
     const [connected, setConnected] = useState<boolean>(false);
+
+    const clientRef = useRef<Client|null>(null);
 
     //set up our websocket
     useEffect(() => {
@@ -32,7 +37,7 @@ export default function useGameState(): Exports {
                 if (!isMounted) return;
 
                 setConnected(true);
-                client.subscribe("/topic/orders", (message: IMessage): void => {
+                client.subscribe("/topic/board", (message: IMessage): void => {
                     const board: Board = JSON.parse(message.body) as Board;
                     setBoard(board);
                 })
@@ -47,6 +52,7 @@ export default function useGameState(): Exports {
             onStompError: (frame: IFrame) => console.error('STOMP error: ', frame),
         });
 
+        clientRef.current = client;
         client.activate();
 
         //cleanup
@@ -54,8 +60,16 @@ export default function useGameState(): Exports {
             isMounted = false;
             void client.deactivate();
             setBoard(blankBoard);
+            clientRef.current = null;
         }
     }, [axiosClient]);
 
-    return {connected, board};
+    function sendMove(move: Move): void {
+        clientRef.current?.publish({
+            destination: "/app/move",
+            body: JSON.stringify(move),
+        });
+    }
+
+    return {connected, board, sendMove};
 }

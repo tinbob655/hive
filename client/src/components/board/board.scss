@@ -1,0 +1,113 @@
+@use '../../scss/variables' as vars;
+
+div.gameBoard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: vars.$global-margin;
+
+  &__status {
+    color: vars.$text-muted;
+  }
+
+  &__svg {
+    width: 100%;
+    max-width: vars.$content-width;
+    height: auto;
+  }
+}
+
+g.hexTile {
+  polygon {
+    fill: vars.$tile-light;
+    stroke: vars.$hex-outline;
+    stroke-width: 2;
+    transition: fill vars.$transition-fast;
+  }
+
+  text {
+    font-family: vars.$font-heading;
+    font-weight: vars.$weight-bold;
+    font-size: 1.4rem;
+    fill: vars.$text-on-primary;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &--black polygon {
+    fill: vars.$bg-surface-light;
+  }
+
+  &--black text {
+    fill: vars.$text-on-dark;
+  }
+
+  &--selected polygon {
+    stroke: vars.$primary-light;
+    stroke-width: 4;
+    filter: drop-shadow(vars.$glow-gold);
+  }
+
+  &--moveTarget polygon {
+    fill: vars.$tile-selected;
+  }
+
+  &--clickable {
+    cursor: pointer;
+
+    &:hover polygon {
+      fill: vars.$tile-hover;
+    }
+  }
+
+  &__stack {
+    font-size: 0.8rem;
+    fill: vars.$primary-light;
+  }
+
+  &__dot {
+    fill: vars.$primary-light;
+    filter: drop-shadow(vars.$glow-gold);
+  }
+}
+
+div.pieceBank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+
+  &__piece {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+
+    padding: 0.5rem 0.9rem;
+    border: 2px solid vars.$border;
+    border-radius: vars.$radius-medium;
+    background: vars.$bg-card;
+    box-shadow: vars.$shadow-small;
+
+    font-family: vars.$font-body;
+    color: vars.$text-primary;
+
+    &--selected {
+      border-color: vars.$primary-light;
+      box-shadow: vars.$glow-gold;
+    }
+
+    &:hover {
+      background: vars.$bg-surface-light;
+    }
+  }
+
+  &__label {
+    font-weight: vars.$weight-semibold;
+  }
+
+  &__count {
+    font-size: vars.$text-sm;
+    color: vars.$text-muted;
+  }
+}
