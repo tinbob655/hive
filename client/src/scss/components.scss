@@ -1,0 +1,30 @@
+@use './variables' as vars;
+
+body {
+  font-family: vars.$font-body;
+  font-size: vars.$text-md;
+  font-weight: vars.$weight-normal;
+  line-height: vars.$line-normal;
+
+  color: vars.$text-primary;
+  background: vars.$bg-page;
+}
+
+button {
+  cursor: pointer;
+  transition: background vars.$transition, transform vars.$transition-fast, box-shadow vars.$transition;
+  user-select: none;
+
+  &:active {
+    transform: translateY(2px);
+  }
+}
+
+div.sectionDivider {
+  margin-left: vars.$global-margin;
+  margin-right: vars.$global-margin;
+  width: 100% - (2 * vars.$global-margin);
+  height: 2px;
+
+  background-color: vars.$primary-dark;
+}

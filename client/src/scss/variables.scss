@@ -1,0 +1,198 @@
+// ------------------------------------------------------
+// Backgrounds
+// ------------------------------------------------------
+
+$bg-page: #24170f;           // Dark walnut
+$bg-surface: #352419;        // Wooden panel
+$bg-surface-light: #463223;  // Raised wood
+$bg-card: #553c2a;           // Cards / menus
+$bg-overlay: rgba(14, 9, 6, 0.75);
+
+// ------------------------------------------------------
+// Primary Colours
+// ------------------------------------------------------
+
+$primary: #d89d24;           // Honey gold
+$primary-light: #f3c75d;
+$primary-dark: #b77d16;
+
+$secondary: #6d8d3f;         // Leaf green
+$secondary-light: #9fbc61;
+$secondary-dark: #4b6428;
+
+// ------------------------------------------------------
+// Accent Colours
+// ------------------------------------------------------
+
+$accent: #284d67;            // Deep hive blue
+$accent-light: #4f86a7;
+
+$danger: #a94334;
+$warning: #d6951c;
+$success: #648b3b;
+
+// ------------------------------------------------------
+// Text
+// ------------------------------------------------------
+
+$text-primary: #f7ecd0;      // Warm parchment
+$text-secondary: #dbcba9;
+$text-muted: #9f8e76;
+
+$text-on-primary: #2b1c10;
+$text-on-dark: #ffffff;
+
+// Fonts
+
+$font-heading: "Cinzel", serif;
+$font-body: "Inter", sans-serif;
+$font-mono: "JetBrains Mono", monospace;
+
+
+// Font Sizes
+
+$text-xs: 0.75rem;      // 12px
+$text-sm: 0.875rem;     // 14px
+$text-md: 1rem;         // 16px
+$text-lg: 1.125rem;     // 18px
+$text-xl: 1.375rem;     // 22px
+$text-2xl: 1.75rem;     // 28px
+$text-3xl: 2.25rem;     // 36px
+$text-4xl: 3rem;        // 48px
+
+
+// Font Weights
+
+$weight-normal: 400;
+$weight-medium: 500;
+$weight-semibold: 600;
+$weight-bold: 700;
+
+
+// Line Heights
+
+$line-tight: 1.15;
+$line-normal: 1.5;
+$line-loose: 1.75;
+
+// ------------------------------------------------------
+// Borders
+// ------------------------------------------------------
+
+$border: #765434;
+$border-light: #a67b4d;
+$border-dark: #1a110c;
+
+$divider: rgba(247, 236, 208, 0.08);
+
+// ------------------------------------------------------
+// Buttons
+// ------------------------------------------------------
+
+$button-primary: $primary;
+$button-primary-hover: #e8b640;
+$button-primary-active: #ba8418;
+
+$button-secondary: #5d7a36;
+$button-secondary-hover: #739645;
+
+$button-disabled: #5e5146;
+
+// ------------------------------------------------------
+// Tiles / Hive Cells
+// ------------------------------------------------------
+
+$tile-light: #f3cb69;
+$tile-dark: #cb8d22;
+$tile-selected: #9dcf5a;
+$tile-hover: #ffe59d;
+
+$hex-outline: #24384f;
+
+// ------------------------------------------------------
+// Inputs
+// ------------------------------------------------------
+
+$input-bg: #473323;
+$input-border: #7d5a39;
+$input-focus: $primary;
+
+$placeholder: #8b7861;
+
+// ------------------------------------------------------
+// Shadows
+// ------------------------------------------------------
+
+$shadow-small: 0 2px 4px rgba(0, 0, 0, 0.25);
+$shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.35);
+$shadow-large: 0 12px 32px rgba(0, 0, 0, 0.45);
+
+$glow-gold: 0 0 18px rgba(233, 181, 56, 0.35);
+$glow-green: 0 0 14px rgba(130, 185, 86, 0.3);
+
+// ------------------------------------------------------
+// Radius
+// ------------------------------------------------------
+
+$radius-small: 6px;
+$radius-medium: 10px;
+$radius-large: 16px;
+$radius-pill: 999px;
+
+// ------------------------------------------------------
+// Layout
+// ------------------------------------------------------
+
+$content-width: 1400px;
+$sidebar-width: 320px;
+$header-height: 72px;
+
+$global-margin: 7.5%;
+
+// ------------------------------------------------------
+// Animation
+// ------------------------------------------------------
+
+$transition-fast: 0.15s ease;
+$transition: 0.25s ease;
+$transition-slow: 0.4s ease;
+
+// ------------------------------------------------------
+// Z Index
+// ------------------------------------------------------
+
+$z-dropdown: 100;
+$z-modal: 500;
+$z-toast: 700;
+$z-tooltip: 1000;
+
+// ------------------------------------------------------
+// Gradients
+// ------------------------------------------------------
+
+$gradient-gold: linear-gradient(
+        180deg,
+        #f8d978 0%,
+        #e2af37 55%,
+        #b87917 100%
+);
+
+$gradient-wood: linear-gradient(
+        180deg,
+        #4c3524 0%,
+        #39271b 100%
+);
+
+$gradient-panel: linear-gradient(
+        180deg,
+        #5a412d 0%,
+        #483222 100%
+);
+
+// ------------------------------------------------------
+// Fonts
+// ------------------------------------------------------
+
+$font-heading: "Cinzel", serif;
+$font-body: "Inter", sans-serif;
+$font-mono: "JetBrains Mono", monospace;

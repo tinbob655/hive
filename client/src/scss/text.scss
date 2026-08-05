@@ -1,0 +1,96 @@
+@use './variables' as vars;
+
+h1 {
+  font-family: vars.$font-heading;
+  font-size: vars.$text-4xl;
+  font-weight: vars.$weight-bold;
+  line-height: vars.$line-tight;
+  letter-spacing: 0.04em;
+
+  color: vars.$primary-light;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.35),
+    0 0 10px rgba(233, 181, 56, 0.2);
+}
+
+h2 {
+  font-family: vars.$font-heading;
+  font-size: vars.$text-2xl;
+  font-weight: vars.$weight-semibold;
+  line-height: vars.$line-tight;
+  letter-spacing: 0.03em;
+
+  color: vars.$text-primary;
+}
+
+p {
+  font-family: vars.$font-body;
+  font-size: vars.$text-md;
+  font-weight: vars.$weight-normal;
+  line-height: vars.$line-normal;
+
+  color: vars.$text-secondary;
+}
+
+h1, h2, p {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+
+  &.alignLeft, section.alignLeft > & {
+    margin-left: vars.$global-margin;
+    margin-right: auto;
+    text-align: left;
+    transform-origin: left;
+  }
+
+  &.alignRight, section.alignRight > & {
+    margin-left: auto;
+    margin-right: vars.$global-margin;
+    text-align: right;
+    transform-origin: right;
+  }
+}
+
+h1, h2, p, span {
+
+  &.textMuted {
+    color: vars.$text-muted;
+  }
+
+  &.textGold {
+    color: vars.$primary-light;
+  }
+
+  &.textSuccess {
+    color: vars.$success;
+  }
+
+  &.textWarning {
+    color: vars.$warning;
+  }
+
+  &.textSuccess {
+    color: vars.$success;
+  }
+}
+
+button {
+  font-family: vars.$font-body;
+  font-size: vars.$text-lg;
+  font-weight: vars.$weight-semibold;
+
+  color: vars.$text-on-primary;
+}
+
+a {
+  cursor: pointer;
+  text-decoration: underline;
+  color: vars.$text-muted;
+
+  transition: transform vars.$transition;
+
+  &:active {
+    transform: translateY(2px);
+  }
+}
