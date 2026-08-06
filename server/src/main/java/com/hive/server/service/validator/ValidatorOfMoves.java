@@ -10,6 +10,6 @@ public final class ValidatorOfMoves implements MoveValidator {
 
     @Override
     public boolean validate(Move move, GameState state) {
-        return false;
+        return state.legalMoves().contains(move);
     }
 }
