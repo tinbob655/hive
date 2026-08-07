@@ -50,7 +50,11 @@ public final class Board {
     }
 
     public Board copy() {
-        return new Board(Map.copyOf(this.cells));
+        Map<HexCoordinate, Deque<Piece>> cellsCopy = new HashMap<>();
+        for (Map.Entry<HexCoordinate, Deque<Piece>> entry : this.cells.entrySet()) {
+            cellsCopy.put(entry.getKey(), new ArrayDeque<>(entry.getValue()));
+        }
+        return new Board(cellsCopy);
     }
 
     public @NonNull Set<HexCoordinate> neighbours(@NonNull HexCoordinate coord) {
@@ -125,5 +129,17 @@ public final class Board {
                 .toList();
 
         return !(this.isOccupied(shared.get(0)) && this.isOccupied(shared.get(1)));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Board b)) return false;
+
+        for (Map.Entry<HexCoordinate, Deque<Piece>> foreignBoardCell : b.getCells().entrySet()) {
+            Deque<Piece> localBoardCell = this.cells.get(foreignBoardCell.getKey());
+            if (!foreignBoardCell.equals(localBoardCell)) return false;
+        }
+
+        return true;
     }
 }
