@@ -9,13 +9,13 @@ import com.hive.server.model.move.RelocateMove;
 import com.hive.server.model.state.GameState;
 import com.hive.server.service.engine.Engine;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Controller
+@RestController
 @RequestMapping("/api/moves")
 @RequiredArgsConstructor
 public final class LegalMovesController implements LegalMovesControllerTemplate {
