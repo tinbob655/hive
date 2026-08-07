@@ -16,10 +16,12 @@ const BUG_LABELS: Record<Bug, string> = {
 interface Props {
     entries: BankEntry[];
     selectedBug: Bug | null;
+    disabled?: boolean;
+
     onSelect: (bug: Bug) => void;
 }
 
-export default function PieceBank({entries, selectedBug, onSelect}: Props): React.ReactElement {
+export default function PieceBank({entries, selectedBug, disabled, onSelect}: Props): React.ReactElement {
 
     return (
         <div className={"pieceBank"}>
@@ -27,6 +29,7 @@ export default function PieceBank({entries, selectedBug, onSelect}: Props): Reac
                 <button
                     key={bug}
                     type={"button"}
+                    disabled={disabled}
                     className={`pieceBank__piece${bug === selectedBug ? ' pieceBank__piece--selected' : ''}`}
                     onClick={() => onSelect(bug)}
                 >

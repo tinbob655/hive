@@ -8,6 +8,9 @@ import type {Move} from "../types/move";
 interface Exports {
     connected: boolean;
     board: Board;
+    error: string | null;
+    isHumanTurn: boolean;
+    botThinking: boolean;
 
     sendMove(move: Move): void;
 }
@@ -22,10 +25,17 @@ export default function useBoard(): Exports {
 
     const [board, setBoard] = useState<Board>(blankBoard);
     const [connected, setConnected] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    //the human player is always white, and the backend's game starts with white to move
+    const [isYourTurn, setIsYourTurn] = useState<boolean>(true);
+    const [botThinking, setBotThinking] = useState<boolean>(false);
 
     const clientRef = useRef<Client|null>(null);
 
-    //set up our websocket
+    //tracks whether the next /topic/board message is the echo of our own move, or the bot's reply
+    const awaitingOwnMoveEcho = useRef<boolean>(false);
+
     useEffect(() => {
         let isMounted: boolean = true;
 
@@ -37,9 +47,24 @@ export default function useBoard(): Exports {
                 if (!isMounted) return;
 
                 setConnected(true);
+                setError(null);
+
                 client.subscribe("/topic/board", (message: IMessage): void => {
                     const board: Board = JSON.parse(message.body) as Board;
                     setBoard(board);
+
+                    if (awaitingOwnMoveEcho.current) {
+
+                        //this is our own move being accepted
+                        awaitingOwnMoveEcho.current = false;
+                        setBotThinking(true);
+                    }
+                    else {
+
+                        //this is the server responding with the bot's move
+                        setBotThinking(false);
+                        setIsYourTurn(true);
+                    }
                 })
             },
 
@@ -49,7 +74,15 @@ export default function useBoard(): Exports {
                 }
             },
 
-            onStompError: (frame: IFrame) => console.error('STOMP error: ', frame),
+            onStompError: (frame: IFrame) => {
+                console.error('STOMP error: ', frame);
+                if (isMounted) setError(frame.headers['message'] ?? 'Connection error');
+            },
+
+            onWebSocketError: (event: Event) => {
+                console.error('WebSocket error: ', event);
+                if (isMounted) setError('Could not reach the game server');
+            },
         });
 
         clientRef.current = client;
@@ -60,16 +93,26 @@ export default function useBoard(): Exports {
             isMounted = false;
             void client.deactivate();
             setBoard(blankBoard);
+            setIsYourTurn(true);
+            setBotThinking(false);
+            awaitingOwnMoveEcho.current = false;
             clientRef.current = null;
         }
     }, [axiosClient]);
 
     function sendMove(move: Move): void {
-        clientRef.current?.publish({
+        if (!clientRef.current) return;
+
+        //optimistically flip turn state the moment we send, the server should confirm
+        awaitingOwnMoveEcho.current = true;
+        setIsYourTurn(false);
+        setBotThinking(false);
+
+        clientRef.current.publish({
             destination: "/app/move",
             body: JSON.stringify(move),
         });
     }
 
-    return {connected, board, sendMove};
+    return {connected, board, error, isHumanTurn: isYourTurn, botThinking, sendMove};
 }
