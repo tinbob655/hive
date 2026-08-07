@@ -13,10 +13,7 @@ import lombok.NonNull;
 
 import java.util.*;
 
-public record GameState(
-        Board board,
-        Colour currentColour
-) {
+public final class GameState implements State {
 
     private static final Map<Bug, Integer> STARTING_COUNTS = Map.of(
             Bug.BEE, 1,
@@ -29,22 +26,55 @@ public record GameState(
             Bug.WOODLOUSE, 1
     );
 
+    private Set<Move> cachedLegalMoves = null;
+    private Boolean cachedGameOver = null;
+
+    private final Board board;
+    private final Colour currentColour;
+
+
+    public GameState(Board board, Colour currentColour) {
+        this.board = board;
+        this.currentColour = currentColour;
+    }
+
+    @Override public Board board() {
+        return this.board;
+    }
+    @Override public Colour currentColour() {
+        return this.currentColour;
+    }
+
+    @Override
     public @NonNull Set<@NonNull Move> legalMoves() {
+
+        if (!this.cachedLegalMoves.isEmpty()) return this.cachedLegalMoves;
+
         Set<Move> res = new HashSet<>();
         res.addAll(this.placementMoves());
         res.addAll(this.relocationMoves());
+        res.addAll(this.woodlouseMoves());
+
+        //save legal moves for later
+        this.cachedLegalMoves = new HashSet<>(res);
         return res;
     }
 
+    @Override
     public boolean isGameOver() {
-        return this.isQueenSurrounded(Colour.WHITE) || this.isQueenSurrounded(Colour.BLACK);
+
+        if (this.cachedGameOver != null) return this.cachedGameOver;
+
+        boolean over = this.isQueenSurrounded(Colour.WHITE) || this.isQueenSurrounded(Colour.BLACK);
+        this.cachedGameOver = over;
+        return over;
     }
 
     private boolean isQueenSurrounded(Colour colour) {
-        HexCoordinate queenAt = this.findQueen(colour);
-        if (queenAt == null) return false;
+        Optional<HexCoordinate> queenAt = this.board.findPiece(new Piece(Bug.BEE, colour));
+        if (queenAt.isEmpty()) return false;
 
-        for (HexCoordinate neighbour : this.board.neighbours(queenAt)) {
+        for (HexCoordinate neighbour : this.board.neighbours(queenAt.get())) {
             if (!this.board.isOccupied(neighbour)) return false;
         }
         return true;
@@ -54,7 +84,7 @@ public record GameState(
         Set<PlaceMove> moves = new HashSet<>();
 
         int piecesPlaced = this.piecesPlacedBy(this.currentColour);
-        boolean queenPlaced = this.findQueen(this.currentColour) != null;
+        boolean queenPlaced = this.board.findPiece(new Piece(Bug.BEE, this.currentColour)).isPresent();
         boolean mustPlaceQueen = !queenPlaced && piecesPlaced == 3; //queen forced down by 4th placement
 
         Set<HexCoordinate> destinations = this.validPlacementCells();
@@ -115,28 +145,18 @@ public record GameState(
         }
         return STARTING_COUNTS.get(bug) - placed;
     }
-
-    private HexCoordinate findQueen(Colour colour) {
-        for (Map.Entry<HexCoordinate, Deque<Piece>> entry : this.board.getCells().entrySet()) {
-            for (Piece piece : entry.getValue()) {
-                if (piece.colour() == colour && piece.bug() == Bug.BEE) return entry.getKey();
-            }
-        }
-        return null;
-    }
-
     // --- relocation ---
 
     private Set<RelocateMove> relocationMoves() {
         Set<RelocateMove> moves = new HashSet<>();
 
-        if (this.findQueen(this.currentColour) == null) return moves; //can't move pieces before your queen is down
+        if (this.board.findPiece(new Piece(Bug.BEE, this.currentColour)).isEmpty()) return moves; //can't move pieces before your queen is down
 
         for (HexCoordinate coord : this.board.occupiedCoordinates()) {
             Piece top = this.board.getTopPiece(coord);
             assert top != null;
             if (top.colour() != this.currentColour) continue;
-            if (!this.board.isConnectedWithoutTop(coord)) continue; //one-hive rule
+            if (this.board.willBreakHive(coord)) continue; //one-hive rule
 
             for (HexCoordinate dest : this.destinationsFor(top.bug(), coord)) {
                 moves.add(new RelocateMove(this.currentColour, coord, dest));
@@ -148,7 +168,7 @@ public record GameState(
 
     private Set<HexCoordinate> destinationsFor(Bug bug, HexCoordinate from) {
         return switch (bug) {
-            case BEE, WOODLOUSE -> this.oneStepSlides(from); //TODO: IMPLEMENT WOODLOUSE MOVEMENT
+            case BEE, WOODLOUSE -> this.oneStepSlides(from);
             case BEETLE -> this.board.neighbours(from);
             case GRASSHOPPER -> this.grasshopperJumps(from);
             case SPIDER -> this.slideExactly(from, 3);
@@ -253,6 +273,45 @@ public record GameState(
         Set<HexCoordinate> res = new HashSet<>();
         for (Bug bug : touchingBugs) {
             res.addAll(this.destinationsFor(bug, from));
+        }
+        return res;
+    }
+
+    // --- woodlouse ---
+    private @NonNull Set<@NonNull RelocateMove> woodlouseMoves() {
+        Set<RelocateMove> res = new HashSet<>();
+
+        //if there's no woodlouse or no queen don't do anything
+        Optional<HexCoordinate> maybeWoodlousePosition = this.board.findPiece(new Piece(Bug.WOODLOUSE, this.currentColour));
+        boolean isQueenPresent = this.board.findPiece(new Piece(Bug.BEE, this.currentColour)).isPresent();
+        if (maybeWoodlousePosition.isEmpty() || !isQueenPresent) return res;
+
+        HexCoordinate woodlousePosition = maybeWoodlousePosition.get();
+
+        //need to classify all neighbours of the woodlouse
+        Set<HexCoordinate> emptyNeighbours = new HashSet<>();
+        Set<HexCoordinate> occupiedNeighbours = new HashSet<>();
+        for (HexCoordinate neighbour : this.board.neighbours(woodlousePosition)) {
+
+            //can never move a stack of bugs
+            if (this.board.stackHeight(neighbour) > 1) continue;
+
+            //make sure moving the bug does not break the hive
+            if (this.board.willBreakHive(neighbour)) continue;
+
+            if (this.board.isOccupied(neighbour)) {
+                occupiedNeighbours.add(neighbour);
+            }
+            else {
+                emptyNeighbours.add(neighbour);
+            }
+        }
+
+        //now generate the moves
+        for (HexCoordinate occupiedNeighbour : occupiedNeighbours) {
+            for (HexCoordinate emptyNeighbour : emptyNeighbours) {
+                res.add(new RelocateMove(this.currentColour, occupiedNeighbour, emptyNeighbour));
+            }
         }
         return res;
     }

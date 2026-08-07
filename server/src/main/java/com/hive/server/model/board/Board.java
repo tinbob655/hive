@@ -57,6 +57,15 @@ public final class Board {
         return new Board(cellsCopy);
     }
 
+    public Optional<HexCoordinate> findPiece(Piece piece) {
+        for (Map.Entry<HexCoordinate, Deque<Piece>> cell : this.cells.entrySet()) {
+            for (Piece p : cell.getValue()) {
+                if (p.colour() == piece.colour() && p.bug() == piece.bug()) return Optional.of(cell.getKey());
+            }
+        }
+        return Optional.empty();
+    }
+
     public @NonNull Set<HexCoordinate> neighbours(@NonNull HexCoordinate coord) {
         Set<HexCoordinate> res = new HashSet<>();
         for (Direction direction : Direction.values()) {
@@ -91,14 +100,16 @@ public final class Board {
     }
 
     //true if we are safe to remove the top piece without breaking the hive
-    public boolean isConnectedWithoutTop(HexCoordinate ignore) {
+    public boolean willBreakHive(HexCoordinate ignore) {
         Set<HexCoordinate> occupied = new HashSet<>(this.occupiedCoordinates());
 
+        if (this.cells.get(ignore).isEmpty()) throw new IllegalStateException("Cannot check for breaking of hive for a cell which is empty");
+
         //can always remove a stacked piece
-        if (this.stackHeight(ignore) > 1) return true;
+        if (this.stackHeight(ignore) > 1) return false;
 
         occupied.remove(ignore);
-        if (occupied.isEmpty()) return true;
+        if (occupied.isEmpty()) return false;
 
         //do a traversal
         Deque<HexCoordinate> toVisit = new ArrayDeque<>();
@@ -117,7 +128,7 @@ public final class Board {
         }
 
         //if we manage to visit every cell then we have avoided breaking the hive
-        return visited.size() == occupied.size();
+        return visited.size() != occupied.size();
     }
 
     //pieces can only slide into a cell if there is space
