@@ -9,24 +9,25 @@ import type {Bug, Cell, HexCoordinate} from "../../types/board";
 import type {Move} from "../../types/move";
 import './board.scss';
 
-const PADDING = HEX_SIZE * 2;
+const PADDING: number = HEX_SIZE * 2;
 
 export default function Board(): React.ReactElement {
 
-    const {board, connected, sendMove} = useBoard();
+    const {board, connected, error, isHumanTurn, botThinking, sendMove} = useBoard();
     const [selection, setSelection] = useState<Selection | null>(null);
+    const [gameStarted, setGameStarted] = useState<boolean>(false);
     const {legalMoves} = useLegalMoves(selection);
 
     const bank: BankEntry[] = useMemo(() => getBank(board, 'WHITE'), [board]);
 
     //index legal moves by destination so lookups while rendering are O(1)
-    const movesByDestination = useMemo(() => {
+    const movesByDestination: Map<string, Move> = useMemo(() => {
         const map = new Map<string, Move>();
         legalMoves.forEach((move) => map.set(coordKey(moveDestination(move)), move));
         return map;
     }, [legalMoves]);
 
-    const occupiedKeys = useMemo(
+    const occupiedKeys: Set<string> = useMemo(
         () => new Set(board.cells.map((cell) => coordKey(cell.coordinate))),
         [board]
     );
@@ -58,7 +59,13 @@ export default function Board(): React.ReactElement {
         };
     }, [board, ghostCells]);
 
+    const boardWidth: number = bounds.maxX - bounds.minX + PADDING * 2;
+    const boardHeight: number = bounds.maxY - bounds.minY + PADDING * 2;
+
     function handleCellClick(cell: Cell): void {
+
+        //don't let the human click cells if it's not their turn
+        if (!isHumanTurn) return;
 
         //clicking a highlighted destination that already holds a piece (a beetle climb) plays that move
         const move = movesByDestination.get(coordKey(cell.coordinate));
@@ -80,6 +87,10 @@ export default function Board(): React.ReactElement {
     }
 
     function handleGhostClick(coordinate: HexCoordinate): void {
+
+        //don't let the human do any moves if it's not their turn
+        if (!isHumanTurn) return;
+
         const move = movesByDestination.get(coordKey(coordinate));
         if (!move) return;
         sendMove(move);
@@ -87,16 +98,49 @@ export default function Board(): React.ReactElement {
     }
 
     function handleBankSelect(bug: Bug): void {
+
+        //don't let the human do any moves if it's not their turn
+        if (!isHumanTurn) return;
+
         setSelection((current) =>
             current?.type === 'bank' && current.bug === bug ? null : {type: 'bank', bug}
         );
     }
 
+    //hide the game until the user chooses to start the game. Note that the backend game starts on boot regardless
+    if (!gameStarted) {
+        return (
+            <div className={"gameBoard gameBoard--start"}>
+                <p className={"gameBoard__status"}>
+                    {error ? `Connection failed: ${error}` : connected ? 'Ready to play' : 'Connecting...'}
+                </p>
+                <button
+                    type={"button"}
+                    className={"gameBoard__startButton"}
+                    disabled={!connected}
+                    onClick={() => setGameStarted(true)}
+                >
+                    Start Game
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className={"gameBoard"}>
-            {!connected && <p className={"gameBoard__status"}>Connecting...</p>}
+            <p className={`gameBoard__status${isHumanTurn ? ' gameBoard__status--yourTurn' : ' gameBoard__status--botTurn'}`}>
+                {!connected
+                    ? (error ? `Connection lost: ${error}` : 'Reconnecting...')
+                    : botThinking
+                        ? 'Bot is thinking...'
+                        : isHumanTurn
+                            ? 'Your turn'
+                            : "Waiting on the bot's turn..."}
+            </p>
 
             <svg
+                width={boardWidth}
+                height={boardHeight}
                 className={"gameBoard__svg"}
                 viewBox={`${bounds.minX - PADDING} ${bounds.minY - PADDING} ${bounds.maxX - bounds.minX + PADDING * 2} ${bounds.maxY - bounds.minY + PADDING * 2}`}
             >
@@ -118,7 +162,7 @@ export default function Board(): React.ReactElement {
                             stackCount={cell.pieces.length}
                             isSelected={isSelected}
                             isMoveTarget={isMoveTarget}
-                            isClickable={topPiece?.colour === 'WHITE' || isMoveTarget}
+                            isClickable={isHumanTurn && (topPiece?.colour === 'WHITE' || isMoveTarget)}
                             onClick={() => handleCellClick(cell)}
                         />
                     );
@@ -133,7 +177,7 @@ export default function Board(): React.ReactElement {
                             y={y}
                             size={HEX_SIZE}
                             isMoveTarget
-                            isClickable
+                            isClickable={isHumanTurn}
                             onClick={() => handleGhostClick(coordinate)}
                         />
                     );
@@ -143,6 +187,7 @@ export default function Board(): React.ReactElement {
             <PieceBank
                 entries={bank}
                 selectedBug={selection?.type === 'bank' ? selection.bug : null}
+                disabled={!isHumanTurn}
                 onSelect={handleBankSelect}
             />
         </div>
