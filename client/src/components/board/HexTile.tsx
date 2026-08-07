@@ -12,6 +12,7 @@ const BUG_LABELS: Record<Bug, string> = {
     MOSQUITO: 'M',
     WOODLOUSE: 'W',
 };
+//TODO: GET BETTER ICONS HERE ^
 
 interface Props {
     x: number;
