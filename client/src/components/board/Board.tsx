@@ -8,12 +8,14 @@ import PieceBank from "./PieceBank.tsx";
 import type {Bug, Cell, HexCoordinate} from "../../types/board";
 import type {Move} from "../../types/move";
 import './board.scss';
+import {Bouncy} from "ldrs/react";
+import 'ldrs/react/Bouncy.css';
 
 const PADDING: number = HEX_SIZE * 2;
 
 export default function Board(): React.ReactElement {
 
-    const {board, connected, error, isHumanTurn, botThinking, sendMove} = useBoard();
+    const {board, connected, error, botThinking, isHumanTurn, sendMove} = useBoard();
     const [selection, setSelection] = useState<Selection | null>(null);
     const [gameStarted, setGameStarted] = useState<boolean>(false);
     const {legalMoves} = useLegalMoves(selection);
@@ -128,15 +130,22 @@ export default function Board(): React.ReactElement {
 
     return (
         <div className={"gameBoard"}>
-            <p className={`gameBoard__status${isHumanTurn ? ' gameBoard__status--yourTurn' : ' gameBoard__status--botTurn'}`}>
-                {!connected
-                    ? (error ? `Connection lost: ${error}` : 'Reconnecting...')
-                    : botThinking
-                        ? 'Bot is thinking...'
+            {botThinking ? (
+                <div style={{display: 'flex', gap: '1rem'}}>
+                    <p className={"gameBoard__status--botTurn"}>
+                        Thinking...
+                    </p>
+                    <Bouncy color={"#d89d24"}/>
+                </div>
+                ) : (
+                <p className={`gameBoard__status${isHumanTurn ? ' gameBoard__status--yourTurn' : ' gameBoard__status--botTurn'}`}>
+                    {!connected
+                        ? (error ? `Connection lost: ${error}` : 'Reconnecting...')
                         : isHumanTurn
-                            ? 'Your turn'
-                            : "Waiting on the bot's turn..."}
-            </p>
+                                ? 'Your turn'
+                                : "Waiting on the bot's turn..."}
+                </p>
+            )}
 
             <svg
                 width={boardWidth}
