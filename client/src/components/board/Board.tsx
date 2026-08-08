@@ -11,8 +11,6 @@ import './board.scss';
 
 const PADDING: number = HEX_SIZE * 2;
 
-//TODO: MAKE BOARD LOOK NICER
-
 export default function Board(): React.ReactElement {
 
     const {board, connected, error, isHumanTurn, botThinking, sendMove} = useBoard();

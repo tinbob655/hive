@@ -1,6 +1,7 @@
 import React from 'react';
 import type {Bug} from "../../types/board";
 import type {BankEntry} from "../../utils/moves.ts";
+import {BUG_ICONS} from "./bugIcons/BugIcons.tsx";
 
 const BUG_LABELS: Record<Bug, string> = {
     BEE: 'Queen Bee',
@@ -25,18 +26,25 @@ export default function PieceBank({entries, selectedBug, disabled, onSelect}: Pr
 
     return (
         <div className={"pieceBank"}>
-            {entries.map(({bug, count}) => (
-                <button
-                    key={bug}
-                    type={"button"}
-                    disabled={disabled}
-                    className={`pieceBank__piece${bug === selectedBug ? ' pieceBank__piece--selected' : ''}`}
-                    onClick={() => onSelect(bug)}
-                >
-                    <span className={"pieceBank__label"}>{BUG_LABELS[bug]}</span>
-                    <span className={"pieceBank__count"}>x{count}</span>
-                </button>
-            ))}
+            {entries.map(({bug, count}) => {
+                const Icon = BUG_ICONS[bug]
+
+                return (
+                    <button
+                        key={bug}
+                        type={"button"}
+                        disabled={disabled}
+                        className={`pieceBank__piece${bug === selectedBug ? ' pieceBank__piece--selected' : ''}`}
+                        onClick={() => onSelect(bug)}
+                    >
+                        <svg viewBox={"0 0 24 24"} className={"pieceBank__icon"}>
+                            <Icon/>
+                        </svg>
+                        <span className={"pieceBank__label"}>{BUG_LABELS[bug]}</span>
+                        <span className={"pieceBank__count"}>x{count}</span>
+                    </button>
+                    )
+            })}
         </div>
     );
 }

@@ -6,8 +6,15 @@ div.gameBoard {
   align-items: center;
   gap: vars.$global-margin;
 
+  padding: 2rem;
+  border-radius: vars.$radius-large;
+  background: vars.$gradient-panel;
+  border: 1px solid vars.$border;
+  box-shadow: vars.$shadow-large;
+
   &__status {
     color: vars.$text-muted;
+    font-weight: vars.$weight-medium;
   }
 
   &__svg {
@@ -18,6 +25,10 @@ div.gameBoard {
 }
 
 g.hexTile {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform vars.$transition-fast;
+
   polygon {
     fill: vars.$tile-light;
     stroke: vars.$hex-outline;
@@ -25,27 +36,25 @@ g.hexTile {
     transition: fill vars.$transition-fast;
   }
 
-  text {
-    font-family: vars.$font-heading;
-    font-weight: vars.$weight-bold;
-    font-size: 1.4rem;
-    fill: vars.$text-on-primary;
-    pointer-events: none;
-    user-select: none;
-  }
-
   &--black polygon {
     fill: vars.$bg-surface-light;
   }
 
-  &--black text {
-    fill: vars.$text-on-dark;
+  &__icon {
+    pointer-events: none;
+    color: vars.$text-on-primary;
   }
 
-  &--selected polygon {
-    stroke: vars.$primary-light;
-    stroke-width: 4;
-    filter: drop-shadow(vars.$glow-gold);
+  &--black &__icon {
+    color: vars.$text-on-dark;
+  }
+
+  &--selected {
+    polygon {
+      stroke: vars.$primary-light;
+      stroke-width: 4;
+      filter: drop-shadow(vars.$glow-gold);
+    }
   }
 
   &--moveTarget polygon {
@@ -55,20 +64,45 @@ g.hexTile {
   &--clickable {
     cursor: pointer;
 
+    &:hover {
+      transform: scale(1.05);
+    }
+
     &:hover polygon {
       fill: vars.$tile-hover;
     }
   }
 
-  &__stack {
-    font-size: 0.8rem;
-    fill: vars.$primary-light;
+  &__stackBadge {
+    circle {
+      fill: vars.$primary-dark;
+      stroke: vars.$primary-light;
+      stroke-width: 1;
+    }
+
+    text {
+      font-family: vars.$font-body;
+      font-weight: vars.$weight-bold;
+      font-size: 0.7rem;
+      fill: vars.$text-on-dark;
+      pointer-events: none;
+      user-select: none;
+    }
   }
 
   &__dot {
-    fill: vars.$primary-light;
+    fill: none;
+    stroke: vars.$primary-light;
+    stroke-width: 2.5;
+    stroke-dasharray: 4 3;
     filter: drop-shadow(vars.$glow-gold);
+    animation: hexDotPulse 1.6s ease-in-out infinite;
   }
+}
+
+@keyframes hexDotPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
 }
 
 div.pieceBank {
@@ -81,9 +115,9 @@ div.pieceBank {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.35rem;
 
-    padding: 0.5rem 0.9rem;
+    padding: 0.65rem 1rem;
     border: 2px solid vars.$border;
     border-radius: vars.$radius-medium;
     background: vars.$bg-card;
@@ -92,22 +126,43 @@ div.pieceBank {
     font-family: vars.$font-body;
     color: vars.$text-primary;
 
+    transition: transform vars.$transition-fast, box-shadow vars.$transition-fast, border-color vars.$transition-fast;
+
+    &:hover:not(:disabled) {
+      background: vars.$bg-surface-light;
+      transform: translateY(-3px);
+      box-shadow: vars.$shadow-medium;
+    }
+
     &--selected {
       border-color: vars.$primary-light;
       box-shadow: vars.$glow-gold;
     }
 
-    &:hover {
-      background: vars.$bg-surface-light;
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+
+      &:hover {
+        background: vars.$bg-card;
+      }
     }
+  }
+
+  &__icon {
+    width: 28px;
+    height: 28px;
+    color: vars.$primary-light;
   }
 
   &__label {
     font-weight: vars.$weight-semibold;
+    font-size: vars.$text-sm;
   }
 
   &__count {
-    font-size: vars.$text-sm;
+    font-size: vars.$text-xs;
     color: vars.$text-muted;
   }
 }
@@ -130,8 +185,11 @@ div.gameBoard {
     font-weight: vars.$weight-semibold;
     color: vars.$text-on-primary;
 
+    transition: box-shadow vars.$transition-fast, transform vars.$transition-fast;
+
     &:hover:not(:disabled) {
       background: vars.$button-primary-hover;
+      box-shadow: vars.$shadow-large;
     }
 
     &:disabled {
@@ -149,14 +207,5 @@ div.gameBoard {
     &--botTurn {
       color: vars.$warning;
     }
-  }
-}
-
-div.pieceBank__piece:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-
-  &:hover {
-    background: vars.$bg-card;
   }
 }

@@ -1,18 +1,7 @@
 import React from 'react';
 import {hexPoints} from "../../utils/hex.ts";
+import {BUG_ICONS} from "./bugIcons/BugIcons.tsx";
 import type {Bug, Colour} from "../../types/board";
-
-const BUG_LABELS: Record<Bug, string> = {
-    BEE: 'Q',
-    BEETLE: 'B',
-    GRASSHOPPER: 'G',
-    SPIDER: 'S',
-    ANT: 'A',
-    LADYBUG: 'L',
-    MOSQUITO: 'M',
-    WOODLOUSE: 'W',
-};
-//TODO: GET BETTER ICONS HERE ^
 
 interface Props {
     x: number;
@@ -37,30 +26,39 @@ export default function HexTile({
     if (isSelected) classNames.push('hexTile--selected');
     if (isClickable) classNames.push('hexTile--clickable');
 
+    const Icon = bug ? BUG_ICONS[bug] : null;
+    const iconSize = size * 0.85;
+
     return (
         <g className={classNames.join(' ')} onClick={onClick}>
             <polygon points={hexPoints(x, y, size)} />
 
-            {bug && (
-                <text x={x} y={y} dy={"0.35em"} textAnchor={"middle"}>
-                {BUG_LABELS[bug]}
-                </text>
+            {Icon && (
+                <svg
+                    x={x - iconSize / 2}
+                    y={y - iconSize / 2}
+                    width={iconSize}
+                    height={iconSize}
+                    viewBox={"0 0 24 24"}
+                    className={"hexTile__icon"}
+                >
+                    <Icon />
+                </svg>
             )}
 
             {stackCount !== undefined && stackCount > 1 && (
-                <text
-                    x={x + size * 0.55}
-                    y={y - size * 0.55}
-                    className={"hexTile__stack"}
-                    textAnchor={"middle"}
+                <g
+                    className={"hexTile__stackBadge"}
+                    transform={`translate(${x + size * 0.62}, ${y - size * 0.62})`}
                 >
-                    x{stackCount}
-                </text>
+                    <circle r={size * 0.22} />
+                    <text dy={"0.32em"} textAnchor={"middle"}>{stackCount}</text>
+                </g>
             )}
 
             {isMoveTarget && !bug && (
                 <circle cx={x} cy={y} r={size * 0.22} className={"hexTile__dot"} />
             )}
-    </g>
-);
+        </g>
+    );
 }
