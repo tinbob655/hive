@@ -23,6 +23,9 @@ public final class MinimaxBot implements Bot {
 
     private static final int SEARCH_DEPTH = 4;
 
+    //hard cap on how long the bot is allowed to think for, in milliseconds
+    private static final long TIME_LIMIT_MS = 4_000;
+
     //should outweigh anything else
     private static final int WIN_SCORE = 1_000_000;
 
@@ -38,19 +41,41 @@ public final class MinimaxBot implements Bot {
             Bug.ANT, 3, Bug.LADYBUG, 1, Bug.MOSQUITO, 1, Bug.WOODLOUSE, 1
     );
 
-    //record which groups an advanced move with its score
     private record ScoredMove(Move move, GameState nextState, int score) {}
+
+
+    //will be thrown if we run out of time doing minimax
+    private static final class SearchTimeout extends RuntimeException {
+        private SearchTimeout() { super(null, null, false, false); }
+    }
+    private static final SearchTimeout TIMEOUT = new SearchTimeout();
 
     @Override
     public @NonNull Move decideMove(@NonNull GameState state) {
-        Set<Move> legalMoves = state.legalMoves();
-        List<ScoredMove> sortedMoves = this.sortMoves(legalMoves, state, true);
 
+        List<ScoredMove> sortedMoves = this.sortMoves(state.legalMoves(), state, true);
+        Move bestMoveOverall = sortedMoves.getFirst().move();
+        long deadline = System.currentTimeMillis() + TIME_LIMIT_MS;
+
+        for (int depth = 1; depth <= SEARCH_DEPTH; depth++) {
+            try {
+                bestMoveOverall = this.bestMoveAtDepth(sortedMoves, depth, deadline);
+            }
+            catch (SearchTimeout timeout) {
+                System.err.println("Timeout reached");
+                break;
+            }
+        }
+
+        return bestMoveOverall;
+    }
+
+    private Move bestMoveAtDepth(List<ScoredMove> sortedMoves, int depth, long deadline) {
         Move bestMove = sortedMoves.getFirst().move();
         int bestScore = Integer.MIN_VALUE;
 
         for (ScoredMove sm : sortedMoves) {
-            int eval = this.minimax(sm.nextState(), SEARCH_DEPTH -1, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+            int eval = this.minimax(sm.nextState(), depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false, deadline);
             if (eval > bestScore) {
                 bestScore = eval;
                 bestMove = sm.move();
@@ -60,10 +85,15 @@ public final class MinimaxBot implements Bot {
         return bestMove;
     }
 
-    private int minimax(GameState state, int depth, int alpha, int beta, boolean maximising) {
+    private int minimax(GameState state, int depth, int alpha, int beta, boolean maximising, long deadline) throws SearchTimeout {
 
         if (depth == 0 || state.isGameOver()) {
             return score(state);
+        }
+
+        //if we are out of time then tap out
+        if (System.currentTimeMillis() >= deadline || Thread.currentThread().isInterrupted()) {
+            throw TIMEOUT;
         }
 
         Set<Move> legalMoves = state.legalMoves();
@@ -73,7 +103,7 @@ public final class MinimaxBot implements Bot {
 
             int maxScore = Integer.MIN_VALUE;
             for (ScoredMove sm : sortedMoves) {
-                int eval = this.minimax(sm.nextState(), depth - 1, alpha, beta, false);
+                int eval = this.minimax(sm.nextState(), depth - 1, alpha, beta, false, deadline);
                 maxScore = Math.max(maxScore, eval);
                 alpha = Math.max(alpha, maxScore);
 
@@ -88,7 +118,7 @@ public final class MinimaxBot implements Bot {
 
             int minScore = Integer.MAX_VALUE;
             for (ScoredMove sm : sortedMoves) {
-                int eval = this.minimax(sm.nextState(), depth - 1, alpha, beta, true);
+                int eval = this.minimax(sm.nextState(), depth - 1, alpha, beta, true, deadline);
                 minScore = Math.min(minScore, eval);
                 beta = Math.min(beta, minScore);
 

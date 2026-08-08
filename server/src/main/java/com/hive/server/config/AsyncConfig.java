@@ -19,6 +19,7 @@ public class AsyncConfig implements AsyncConfigurer {
         executor.setMaxPoolSize(4);
         executor.setQueueCapacity(50);
         executor.setThreadNamePrefix("hive-async-");
+        executor.setDaemon(true);
         executor.initialize();
         return executor;
     }
