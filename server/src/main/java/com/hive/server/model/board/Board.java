@@ -103,7 +103,7 @@ public final class Board {
     public boolean willBreakHive(HexCoordinate ignore) {
         Set<HexCoordinate> occupied = new HashSet<>(this.occupiedCoordinates());
 
-        if (this.cells.get(ignore).isEmpty()) throw new IllegalStateException("Cannot check for breaking of hive for a cell which is empty");
+        if (!this.isOccupied(ignore)) throw new IllegalStateException("Cannot check for breaking of hive for a cell which is empty");
 
         //can always remove a stacked piece
         if (this.stackHeight(ignore) > 1) return false;

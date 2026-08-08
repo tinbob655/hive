@@ -48,7 +48,7 @@ public final class GameState implements State {
     @Override
     public @NonNull Set<@NonNull Move> legalMoves() {
 
-        if (!this.cachedLegalMoves.isEmpty()) return this.cachedLegalMoves;
+        if (this.cachedLegalMoves != null && !this.cachedLegalMoves.isEmpty()) return this.cachedLegalMoves;
 
         Set<Move> res = new HashSet<>();
         res.addAll(this.placementMoves());
@@ -293,18 +293,19 @@ public final class GameState implements State {
         Set<HexCoordinate> occupiedNeighbours = new HashSet<>();
         for (HexCoordinate neighbour : this.board.neighbours(woodlousePosition)) {
 
+            //if the neighbour is blank
+            if (!this.board.isOccupied(neighbour)) {
+                emptyNeighbours.add(neighbour);
+                continue;
+            }
+
             //can never move a stack of bugs
             if (this.board.stackHeight(neighbour) > 1) continue;
 
             //make sure moving the bug does not break the hive
             if (this.board.willBreakHive(neighbour)) continue;
 
-            if (this.board.isOccupied(neighbour)) {
-                occupiedNeighbours.add(neighbour);
-            }
-            else {
-                emptyNeighbours.add(neighbour);
-            }
+            occupiedNeighbours.add(neighbour);
         }
 
         //now generate the moves
