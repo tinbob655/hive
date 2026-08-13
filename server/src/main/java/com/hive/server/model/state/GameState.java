@@ -48,7 +48,7 @@ public final class GameState implements State {
     @Override
     public @NonNull Set<@NonNull Move> legalMoves() {
 
-        if (this.cachedLegalMoves != null && !this.cachedLegalMoves.isEmpty()) return this.cachedLegalMoves;
+        if (this.cachedLegalMoves != null) return this.cachedLegalMoves;
 
         Set<Move> res = new HashSet<>();
         res.addAll(this.placementMoves());
@@ -56,7 +56,7 @@ public final class GameState implements State {
         res.addAll(this.woodlouseMoves());
 
         //save legal moves for later
-        this.cachedLegalMoves = new HashSet<>(res);
+        this.cachedLegalMoves = res;
         return res;
     }
 
