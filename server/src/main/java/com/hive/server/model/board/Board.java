@@ -145,12 +145,11 @@ public final class Board {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Board b)) return false;
+        return this.cells.equals(b.cells);
+    }
 
-        for (Map.Entry<HexCoordinate, Deque<Piece>> foreignBoardCell : b.getCells().entrySet()) {
-            Deque<Piece> localBoardCell = this.cells.get(foreignBoardCell.getKey());
-            if (!foreignBoardCell.equals(localBoardCell)) return false;
-        }
-
-        return true;
+    @Override
+    public int hashCode() {
+        return this.cells.hashCode();
     }
 }
