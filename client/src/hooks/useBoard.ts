@@ -78,6 +78,12 @@ export default function useBoard(): Exports {
                     setBotThinking(false);
                     setIsYourTurn(false);
                 });
+
+                //listens for errors moving
+                client.subscribe("/topic/moveError", (message: IMessage): void => {
+                    const errorMsg: string = message.body as string;
+                    setError(errorMsg);
+                })
             },
 
             onDisconnect: () => {
