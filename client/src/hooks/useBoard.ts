@@ -2,8 +2,9 @@ import {useEffect, useState, useRef} from 'react';
 import useAxios from "./useAxios.ts";
 import {Client, type IFrame, type IMessage} from "@stomp/stompjs";
 import SockJS from 'sockjs-client';
-import type {Board} from "../types/board";
+import type {Board, Colour} from "../types/board";
 import type {Move} from "../types/move";
+import type {GameOverInfo} from "../types/gameOver";
 
 interface Exports {
     connected: boolean;
@@ -11,6 +12,7 @@ interface Exports {
     error: string | null;
     isHumanTurn: boolean;
     botThinking: boolean;
+    winner: Colour | null;
 
     sendMove(move: Move): void;
 }
@@ -26,6 +28,7 @@ export default function useBoard(): Exports {
     const [board, setBoard] = useState<Board>(blankBoard);
     const [connected, setConnected] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [winner, setWinner] = useState<Colour | null>(null);
 
     //the human player is always white, and the backend's game starts with white to move
     const [isYourTurn, setIsYourTurn] = useState<boolean>(true);
@@ -49,6 +52,7 @@ export default function useBoard(): Exports {
                 setConnected(true);
                 setError(null);
 
+                //listens for server moves
                 client.subscribe("/topic/board", (message: IMessage): void => {
                     const board: Board = JSON.parse(message.body) as Board;
                     setBoard(board);
@@ -65,7 +69,15 @@ export default function useBoard(): Exports {
                         setBotThinking(false);
                         setIsYourTurn(true);
                     }
-                })
+                });
+
+                //listens for game over
+                client.subscribe("/topic/gameOver", (message: IMessage): void => {
+                    const gameOverInfo: GameOverInfo = JSON.parse(message.body) as GameOverInfo;
+                    setWinner(gameOverInfo.winner);
+                    setBotThinking(false);
+                    setIsYourTurn(false);
+                });
             },
 
             onDisconnect: () => {
@@ -114,5 +126,5 @@ export default function useBoard(): Exports {
         });
     }
 
-    return {connected, board, error, isHumanTurn: isYourTurn, botThinking, sendMove};
+    return {connected, board, error, isHumanTurn: isYourTurn, botThinking, winner, sendMove};
 }

@@ -2,6 +2,7 @@ package com.hive.server.controller.socket;
 
 
 import com.hive.server.model.dto.FrontendBoard;
+import com.hive.server.model.dto.GameOverInfo;
 import com.hive.server.model.enums.Colour;
 import com.hive.server.model.move.Move;
 import com.hive.server.model.state.GameState;
@@ -30,12 +31,31 @@ public final class WebSocketController implements WebSocketControllerTemplate {
         GameState stateAfterHumanMove = this.gameEngine.
                 handleHumanMove(move);
 
-        //create the dto to send back to the front
+        //create the dto to send human move to the front
         FrontendBoard frontendBoard = stateAfterHumanMove.board().getFrontendBoard();
         this.publisher.publish(frontendBoard);
 
+        //check for game over
+        boolean isGameOver = stateAfterHumanMove.isGameOver();
+        if (isGameOver) {
+            this.publisher.publish(new GameOverInfo(Colour.WHITE));
+            return ResponseEntity.ok().build();
+        }
+
         //the bot's turn
-        this.gameEngine.playBotTurn();
+        this.gameEngine.playBotTurn()
+                .thenAccept(stateAfterBotMove -> {
+
+                    //send bot's move to frontend
+                    FrontendBoard botFrontendBoard = stateAfterBotMove.board().getFrontendBoard();
+                    this.publisher.publish(botFrontendBoard);
+
+                    //check for game over
+                    boolean isBotGameOver = stateAfterBotMove.isGameOver();
+                    if (isBotGameOver) {
+                        this.publisher.publish(new GameOverInfo(Colour.BLACK));
+                    }
+                });
 
         return ResponseEntity.ok().build();
     }

@@ -9,13 +9,14 @@ import com.hive.server.model.move.PlaceMove;
 import com.hive.server.model.move.RelocateMove;
 import com.hive.server.model.state.GameState;
 import com.hive.server.service.bot.Bot;
-import com.hive.server.service.publisher.Publisher;
 import com.hive.server.service.validator.MoveValidator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,6 @@ public class GameEngine implements Engine {
 
     private final Bot bot;
     private final MoveValidator moveValidator;
-    private final Publisher publisher;
 
     @Override
     public GameState handleHumanMove(Move move) throws InvalidMoveException {
@@ -44,14 +44,14 @@ public class GameEngine implements Engine {
 
     @Override
     @Async
-    public void playBotTurn() {
+    public CompletableFuture<GameState> playBotTurn() {
         Move botMove = this.bot.decideMove(this.state);
 
         boolean isValid = this.moveValidator.validate(botMove, this.state);
         if (!isValid) throw new InvalidMoveException(Colour.BLACK);
 
         this.advance(botMove);
-        this.publisher.publish(this.state.board().getFrontendBoard());
+        return CompletableFuture.completedFuture(this.state);
     }
 
 
