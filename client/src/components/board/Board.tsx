@@ -6,7 +6,7 @@ import {type BankEntry, getBank, moveDestination} from "../../utils/moves.ts";
 import HexTile from "./HexTile.tsx";
 import PieceBank from "./PieceBank.tsx";
 import type {Bug, Cell, HexCoordinate} from "../../types/board";
-import type {Move} from "../../types/move";
+import type {Move, SkipMove} from "../../types/move";
 import './board.scss';
 import {Bouncy} from "ldrs/react";
 import 'ldrs/react/Bouncy.css';
@@ -109,6 +109,11 @@ export default function Board(): React.ReactElement {
         );
     }
 
+    function sendSkipMove(): void {
+        const skipMove: SkipMove = {colour: 'WHITE'};
+        sendMove(skipMove);
+    }
+
     //hide the game until the user chooses to start the game. Note that the backend game starts on boot regardless
     if (!gameStarted) {
         return (
@@ -130,6 +135,8 @@ export default function Board(): React.ReactElement {
 
     return (
         <div className={"gameBoard"}>
+
+            {/*winner / turn status message*/}
             {winner ? (
                 <h2>
                     Game over! {winner} won!
@@ -149,6 +156,18 @@ export default function Board(): React.ReactElement {
                             ? 'Your turn'
                             : "Waiting on the bot's turn..."}
                 </p>
+            )}
+
+            {/*tell the user if their turn was skipped due to no available moves*/}
+            {legalMoves.length === 0 && (
+                <React.Fragment>
+                    <p>
+                        You have no moves available and so must forfeit your turn!
+                    </p>
+                    <button type={"button"} onClick={sendSkipMove} >
+                        Click here to forfeit
+                    </button>
+                </React.Fragment>
             )}
 
             <svg

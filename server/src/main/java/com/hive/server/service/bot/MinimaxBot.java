@@ -8,6 +8,7 @@ import com.hive.server.model.enums.Colour;
 import com.hive.server.model.move.Move;
 import com.hive.server.model.move.PlaceMove;
 import com.hive.server.model.move.RelocateMove;
+import com.hive.server.model.move.SkipMove;
 import com.hive.server.model.state.GameState;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,11 @@ public final class MinimaxBot implements Bot {
 
     @Override
     public @NonNull Move decideMove(@NonNull GameState state) {
+
+        //no moves available is a skip
+        if (state.legalMoves().isEmpty()) {
+            return new SkipMove(Colour.BLACK);
+        }
 
         List<ScoredMove> sortedMoves = this.sortMoves(state.legalMoves(), state, true);
         Move bestMoveOverall = sortedMoves.getFirst().move();
@@ -224,6 +230,7 @@ public final class MinimaxBot implements Bot {
         switch (move) {
             case PlaceMove mv -> board.addPiece(new Piece(mv.bug(), mv.colour()), mv.destination());
             case RelocateMove mv -> board.movePiece(mv.from(), mv.to());
+            case SkipMove ignored -> {}
         }
         Colour nextColor = oldState.currentColour() == Colour.WHITE ? Colour.BLACK : Colour.WHITE;
         return new GameState(board, nextColor);

@@ -7,6 +7,7 @@ import com.hive.server.model.exception.InvalidMoveException;
 import com.hive.server.model.move.Move;
 import com.hive.server.model.move.PlaceMove;
 import com.hive.server.model.move.RelocateMove;
+import com.hive.server.model.move.SkipMove;
 import com.hive.server.model.state.GameState;
 import com.hive.server.service.bot.Bot;
 import com.hive.server.service.validator.MoveValidator;
@@ -61,6 +62,7 @@ public class GameEngine implements Engine {
         switch (move) {
             case PlaceMove mv -> this.board.addPiece(new Piece(mv.bug(), mv.colour()), mv.destination());
             case RelocateMove mv -> this.board.movePiece(mv.from(), mv.to());
+            case SkipMove ignored -> {}
         }
 
         this.turn = this.turn == Colour.WHITE ? Colour.BLACK : Colour.WHITE;
