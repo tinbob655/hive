@@ -12,6 +12,7 @@ import com.hive.server.model.move.RelocateMove;
 import lombok.NonNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class GameState implements State {
 
@@ -273,6 +274,15 @@ public final class GameState implements State {
         Set<HexCoordinate> res = new HashSet<>();
         for (Bug bug : touchingBugs) {
             res.addAll(this.destinationsFor(bug, from));
+
+            //woodlouse moves
+            if (bug == Bug.WOODLOUSE) {
+                res.addAll(
+                        this.woodlouseMoves().stream()
+                                .map(RelocateMove::to)
+                                .collect(Collectors.toSet())
+                );
+            }
         }
         return res;
     }
