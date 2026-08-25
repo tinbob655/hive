@@ -10,6 +10,7 @@ export type Selection =
 interface Exports {
     legalMoves: Move[];
     loading: boolean;
+    noMovesAvailable: boolean;
 }
 
 export default function useLegalMoves(selection: Selection | null): Exports {
@@ -17,6 +18,7 @@ export default function useLegalMoves(selection: Selection | null): Exports {
     const {axiosClient} = useAxios();
     const [serverLegalMoves, setServerLegalMoves] = useState<Move[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [noMovesAvailable, setNoMovesAvailable] = useState<boolean>(false);
 
     const legalMoves: Move[] = selection ? serverLegalMoves : [];
 
@@ -41,7 +43,10 @@ export default function useLegalMoves(selection: Selection | null): Exports {
 
             request
                 .then((response) => {
-                    if (!cancelled) setServerLegalMoves(response.data);
+                    if (!cancelled) {
+                        setServerLegalMoves(response.data);
+                        setNoMovesAvailable(response.data.length === 0);
+                    }
                 })
                 .catch((error) => {
                     console.error('Failed to fetch legal moves', error);
@@ -59,5 +64,5 @@ export default function useLegalMoves(selection: Selection | null): Exports {
         };
     }, [selection, axiosClient]);
 
-    return {legalMoves, loading};
+    return {legalMoves, loading, noMovesAvailable};
 }

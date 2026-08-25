@@ -18,7 +18,7 @@ export default function Board(): React.ReactElement {
     const {board, connected, error, botThinking, isHumanTurn, winner, sendMove} = useBoard();
     const [selection, setSelection] = useState<Selection | null>(null);
     const [gameStarted, setGameStarted] = useState<boolean>(false);
-    const {legalMoves} = useLegalMoves(selection);
+    const {legalMoves, noMovesAvailable} = useLegalMoves(selection);
 
     const bank: BankEntry[] = useMemo(() => getBank(board, 'WHITE'), [board]);
 
@@ -159,7 +159,7 @@ export default function Board(): React.ReactElement {
             )}
 
             {/*tell the user if their turn was skipped due to no available moves*/}
-            {legalMoves.length === 0 && (
+            {noMovesAvailable && (
                 <React.Fragment>
                     <p>
                         You have no moves available and so must forfeit your turn!
