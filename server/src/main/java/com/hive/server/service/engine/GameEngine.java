@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 public class GameEngine implements Engine {
 
     private final Board board = new Board();
-    private Colour turn = Colour.WHITE;
+    private volatile Colour turn = Colour.WHITE;
 
     @Getter
     private volatile GameState state = this.computeState();
