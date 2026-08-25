@@ -27,7 +27,7 @@ public class GameEngine implements Engine {
     private Colour turn = Colour.WHITE;
 
     @Getter
-    private GameState state = this.computeState();
+    private volatile GameState state = this.computeState();
 
     private final Bot bot;
     private final MoveValidator moveValidator;
