@@ -55,6 +55,10 @@ public final class WebSocketController implements WebSocketControllerTemplate {
                     if (isBotGameOver) {
                         this.publisher.publish(new GameOverInfo(Colour.BLACK));
                     }
+                })
+                .exceptionally(ex -> {
+                    System.err.println("Bot turn failed: " + ex.getMessage());
+                    return null;
                 });
 
         return ResponseEntity.ok().build();

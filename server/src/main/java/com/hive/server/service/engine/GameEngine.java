@@ -46,13 +46,19 @@ public class GameEngine implements Engine {
     @Override
     @Async
     public CompletableFuture<GameState> playBotTurn() {
-        Move botMove = this.bot.decideMove(this.state);
+        try {
+            Move botMove = this.bot.decideMove(this.state);
 
-        boolean isValid = this.moveValidator.validate(botMove, this.state);
-        if (!isValid) throw new InvalidMoveException(Colour.BLACK);
+            boolean isValid = this.moveValidator.validate(botMove, this.state);
+            if (!isValid) throw new InvalidMoveException(Colour.BLACK);
 
-        this.advance(botMove);
-        return CompletableFuture.completedFuture(this.state);
+            this.advance(botMove);
+            return CompletableFuture.completedFuture(this.state);
+        }
+        catch (Exception e) {
+            System.err.println("Bot failed to produce a move: " + e.getMessage());
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
 
