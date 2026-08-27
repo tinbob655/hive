@@ -22,7 +22,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public final class MinimaxBot implements Bot {
 
-    private static final int MINIMAX_DEPTH = 3;
+    private static final int MINIMAX_DEPTH = 2;
 
 
     @Override
@@ -49,8 +49,6 @@ public final class MinimaxBot implements Bot {
                     bestMove = move;
                 }
             }
-
-            System.out.println("Decided on move");
             return bestMove;
         }
 
